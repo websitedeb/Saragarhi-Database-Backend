@@ -1,0 +1,14 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "saragarhi-api-database-test",
+	"main": "src/index.js",
+	"compatibility_date": "2025-08-19",
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [{
+		"binding": "DB",
+		"database_name": "saragarhi_test",
+		"database_id": "ce551c17-08e9-48c4-8def-24df7fb370b6"
+	}],
+}
