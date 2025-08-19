@@ -128,7 +128,10 @@ app.post('/addReport', async c => {
 
   for (let i = 0; i < NumberOfDataSets; i++) {
     const key = keys[i];
-    const [type, value] = body[key]
+    const entry = body[key];
+    if (!entry) continue;
+
+    const [type, value] = entry;
     const column = dataSetColumns[i];
 
     switch (type) {
