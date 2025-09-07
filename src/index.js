@@ -169,4 +169,24 @@ app.post('/addReport', async c => {
   }
 });
 
+app.get("/getStatsOfTeam", async c => {
+  const { teamNum } = await c.req.json();
+
+  if (!teamNum) {
+    return c.json({ success: false, error: 'Team number is required' }, 400);
+  }
+
+  const team = await c.env.DB.prepare(
+    'SELECT * FROM Teams WHERE Number = ?'
+  ).bind(teamNum).first();
+
+  if (!team) {
+    return c.json({ success: false, error: 'Team not found' }, 404);
+  }
+  else{
+    const {DataSetOne, DataSetTwo, DataSetThree, DataSetFour, DataSetFive, DataSetSix, DataSetSeven, DataSetEight, DataSetNine, DataSetTen} = team;
+    return c.json({ success: true,  DataSetOne: DataSetOne, DataSetTwo: DataSetTwo, DataSetThree: DataSetThree, DataSetFour: DataSetFour, DataSetFive: DataSetFive, DataSetSix: DataSetSix, DataSetSeven: DataSetSeven, DataSetEight: DataSetEight, DataSetNine: DataSetNine, DataSetTen: DataSetTen });
+  }
+})
+
 export default app;
