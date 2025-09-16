@@ -97,15 +97,15 @@ app.post("/addTeam", async (c) => {
 });
 
 app.post('/getTeam', async (c) => {
-  const { teamName } = await c.req.json();
+  const { teamNum } = await c.req.json();
 
-  if (!teamName) {
-    return c.json({ success: false, error: 'Team name is required' }, 400);
+  if (!teamNum) {
+    return c.json({ success: false, error: 'Team number is required' }, 400);
   }
 
   const team = await c.env.DB.prepare(
-    'SELECT * FROM Teams WHERE Name = ?'
-  ).bind(teamName).first();
+    'SELECT * FROM Teams WHERE Number = ?'
+  ).bind(teamNum).first();
 
   if (!team) {
     return c.json({ success: false, error: 'Team not found' }, 404);
@@ -169,7 +169,7 @@ app.post('/addReport', async c => {
   }
 });
 
-app.get("/getStatsOfTeam", async c => {
+app.post("/getStatsOfTeam", async c => {
   const { teamNum } = await c.req.json();
 
   if (!teamNum) {
