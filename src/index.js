@@ -92,6 +92,14 @@ app.post("/addTeam", async (c) => {
   if (result.error) {
     return c.json({ success: false, error: 'Failed to add team' }, 500);
   } else {
+    const check = await c.env.DB.prepare(
+      'SELECT * FROM UnNamed WHERE "Team Number" = ?'
+    ).bind(teamNum).first();
+    if (check) {
+      await c.env.DB.prepare(
+        'DELETE FROM UnNamed WHERE "Team Number" = ?'
+      ).bind(teamNum).run();
+    }
     return c.json({ success: true, result });
   }
 });
@@ -108,7 +116,13 @@ app.post('/getTeam', async (c) => {
   ).bind(teamNum).first();
 
   if (!team) {
-    return c.json({ success: false, error: 'Team not found' }, 404);
+    const TEAM = await c.env.DB.prepare(
+      'SELECT * FROM UnNamed WHERE "Team Number" = ?'
+    ).bind(teamNum).first();
+    if (!TEAM) {
+      return c.json({ success: false, error: 'Team not found' }, 404);
+    }
+    return c.json({ success: true, team: TEAM });
   }
   else{
     return c.json({ success: true, team });
@@ -149,23 +163,55 @@ app.post('/addReport', async c => {
         break;
     }
   }
+
+  const check = await c.env.DB.prepare(`SELECT * FROM Teams WHERE Number = ?`).bind(TeamNumber).first();
   
-  const sql = `
-    UPDATE Teams
-    SET ${sets.join(", ")}
-    WHERE Number = ?
-  `;
+  if (check) {
+    const sql = `
+      UPDATE Teams
+      SET ${sets.join(", ")}
+      WHERE Number = ?
+    `;
 
-  values.push(TeamNumber);
+    values.push(TeamNumber);
 
-  const res = await c.env.DB.prepare(sql).bind(...values).run();
+    const res = await c.env.DB.prepare(sql).bind(...values).run();
 
-  if (res.error) {
-    return c.json({ success: false, error: 'Internal Database Error' }, 500);
-  }
-  else{
-    console.log("Values:", ...values);
-    return c.json({ success: true, message: 'added new dataset(s)' }, 200);
+    if (res.error) {
+      return c.json({ success: false, error: 'Internal Database Error' }, 500);
+    }
+    else{
+      return c.json({ success: true, message: 'added new dataset(s)' }, 200);
+    }
+  } else {
+    const check2 = await c.env.DB.prepare(`SELECT * FROM "UnNamed" WHERE "Team Number" = ?`).bind(TeamNumber).first();
+    if (check2) {
+      const sql = `
+        UPDATE "UnNamed"
+        SET ${sets.join(", ")}
+        WHERE "Team Number" = ?
+      `;
+      values.push(TeamNumber);
+
+      const res = await c.env.DB.prepare(sql).bind(...values).run();
+      if (res.error) {
+        return c.json({ success: false, error: 'Internal Database Error' }, 500);
+      }
+      else{
+        return c.json({ success: true, message: 'added new dataset(s)' }, 200);
+      }
+    } else {
+      const sql = `
+        INSERT INTO "UnNamed" ("Team Number", ${dataSetColumns.slice(0, sets.length).join(", ")}) VALUES (?, ${sets.map(() => '?').join(", ")})
+      `;
+      values.unshift(TeamNumber);
+      const res = await c.env.DB.prepare(sql).bind(...values).run();
+      if (res.error) {
+        return c.json({ success: false, error: 'Internal Database Error' }, 500);
+      } else{
+        return c.json({ success: true, message: 'added new dataset(s)' }, 200);
+      }
+    }
   }
 });
 
@@ -181,12 +227,21 @@ app.post("/getStatsOfTeam", async c => {
   ).bind(teamNum).first();
 
   if (!team) {
-    return c.json({ success: false, error: 'Team not found' }, 404);
+    const TEAM = await c.env.DB.prepare(
+      'SELECT * FROM UnNamed WHERE "Team Number" = ?'
+    ).bind(teamNum).first();
+
+    if (!TEAM) {
+      return c.json({ success: false, error: 'Team has not data currently' }, 404);
+    }
+
+    const {DataSetOne, DataSetTwo, DataSetThree, DataSetFour, DataSetFive, DataSetSix, DataSetSeven, DataSetEight, DataSetNine, DataSetTen} = TEAM;
+    return c.json({ success: true,  DataSetOne: DataSetOne, DataSetTwo: DataSetTwo, DataSetThree: DataSetThree, DataSetFour: DataSetFour, DataSetFive: DataSetFive, DataSetSix: DataSetSix, DataSetSeven: DataSetSeven, DataSetEight: DataSetEight, DataSetNine: DataSetNine, DataSetTen: DataSetTen });
   }
   else{
     const {DataSetOne, DataSetTwo, DataSetThree, DataSetFour, DataSetFive, DataSetSix, DataSetSeven, DataSetEight, DataSetNine, DataSetTen} = team;
     return c.json({ success: true,  DataSetOne: DataSetOne, DataSetTwo: DataSetTwo, DataSetThree: DataSetThree, DataSetFour: DataSetFour, DataSetFive: DataSetFive, DataSetSix: DataSetSix, DataSetSeven: DataSetSeven, DataSetEight: DataSetEight, DataSetNine: DataSetNine, DataSetTen: DataSetTen });
   }
-})
+});
 
 export default app;
