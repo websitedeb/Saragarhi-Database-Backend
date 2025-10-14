@@ -71,7 +71,8 @@ app.post('/getUser', async (c) => {
       Email: email,
       TeamCode: pw['Team Code'],
       Name: pw.Name,
-      Password: pw.Password
+      Password: pw.Password,
+      Role: pw.Role
     }
 
     return c.json({ success: true, message: 'User authenticated successfully', data: payload });
