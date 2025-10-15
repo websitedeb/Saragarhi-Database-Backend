@@ -245,4 +245,22 @@ app.post("/getStatsOfTeam", async c => {
   }
 });
 
+app.post("getAllMembersOfTeamThatAreScoutersAndCaptains", async c => {
+  const { teamCode } = await c.req.json();
+
+  if (!teamCode) {
+    return c.json({ success: false, error: 'Team code is required' }, 400);
+  }
+
+  const members = await c.env.DB.prepare(
+    'SELECT Name, Email, Role FROM Users WHERE "Team Code" = ? AND Role = "Scouter" OR Role = "Captain"'
+  ).bind(teamCode).all();
+
+  if (!members || members.results.length === 0) {
+    return c.json({ success: false, error: 'No members found for this team' }, 404);
+  }
+
+  return c.json({ success: true, members: members.results });
+});
+
 export default app;
