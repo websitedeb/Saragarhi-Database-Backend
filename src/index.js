@@ -8,7 +8,7 @@ app.use('*', cors())
 
 app.put('/addUser', async (c) => {
   const body = await c.req.json()
-  const { email, name, teamCode, Password } = body
+  const { email, name, teamCode, Password, Role } = body
 
   if (!email || !name || !teamCode || !Password) {
     return c.json({ success: false, error: 'All fields are required' }, 400)
@@ -34,9 +34,9 @@ app.put('/addUser', async (c) => {
   const hashedPassword = await bcrypt.hash(Password, 10)
 
   const result = await c.env.DB.prepare(
-    'INSERT INTO Users (Email, Name, "Team Code", Password) VALUES (?, ?, ?, ?)'
+    'INSERT INTO Users (Email, Name, "Team Code", Password, Role) VALUES (?, ?, ?, ?, ?)'
     )
-    .bind(email, name, teamCode, hashedPassword)
+    .bind(email, name, teamCode, hashedPassword, Role)
     .all();
 
   if (result.error) {
@@ -72,7 +72,8 @@ app.post('/getUser', async (c) => {
       TeamCode: pw['Team Code'],
       Name: pw.Name,
       Password: pw.Password,
-      Role: pw.Role
+      Role: pw.Role,
+      TimeTable: pw['Time Table']
     }
 
     return c.json({ success: true, message: 'User authenticated successfully', data: payload });
