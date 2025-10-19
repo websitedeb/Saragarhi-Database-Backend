@@ -2,7 +2,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "saragarhi-api-database-test",
 	"main": "src/index.js",
-	"compatibility_date": "2025-10-16",
+	"compatibility_date": "2025-10-18",
 	"observability": {
 		"enabled": true
 	},
