@@ -265,11 +265,13 @@ app.post("getAllMembersOfTeamThatAreScoutersAndCaptains", async c => {
 });
 
 app.post("updateMemberTimeTable", async c => {
-  const { timetable, member } = await c.req.body();
+  const { Time, Date, Team, member } = await c.req.body();
 
-  if (!timetable || !member) {
+  if (!Time || !Date || !Team || !member) {
     return c.json({ success: false, error: 'missing requirements' }, 400);
   }
+
+  const timetable = JSON.stringify({ Time: Time, Date: Date, Team: Team });
 
   const res = await c.env.DB.prepare(
     'UPDATE Users SET "Time Table" = ? WHERE Name = ?'
@@ -351,6 +353,54 @@ app.post("/updateMemberTeam", async c => {
     return c.json({ success: false, error: 'Internal Database Error' }, 500);
   } else{
     return c.json({ success: true, message: 'Member name updated' }, 200);
+  }
+});
+
+app.post("/updateMemberRole", async c => {
+  const { old: oldRole, new: newRole } = await c.req.json();
+  if (!oldRole || !newRole) {
+    return c.json({ success: false, error: 'missing requirements' }, 400);
+  }
+  const res = await c.env.DB.prepare(
+    'UPDATE Users SET Role = ? WHERE Role = ?'
+  ).bind(newRole, oldRole).run();
+  if (res.error) {
+    return c.json({ success: false, error: 'Internal Database Error' }, 500);
+  }
+  else{
+    return c.json({ success: true, message: 'Member role updated' }, 200);
+  }
+});
+
+app.post("/deleteMember", async c => {
+  const { name } = await c.req.json();   
+  if (!name) {
+    return c.json({ success: false, error: 'missing requirements' }, 400);
+  }
+  const res = await c.env.DB.prepare(
+    'DELETE FROM Users WHERE Name = ?'
+  ).bind(name).run();
+  if (res.error) {
+    return c.json({ success: false, error: 'Internal Database Error' }, 500);
+  }
+  else{
+    return c.json({ success: true, message: 'Member deleted' }, 200);
+  }
+});
+
+app.post("/updateTimeTable", async c => {
+  const { name, teamCode, timetable } = await c.req.json();
+  if (!name || !team || !timetable) {
+    return c.json({ success: false, error: 'missing requirements' }, 400);
+  }
+  const res = await c.env.DB.prepare(
+    'UPDATE Users SET "Time Table" = ? WHERE Name = ? AND "Team Code" = ?'
+  ).bind(timetable, name, teamCode).run();
+  if (res.error) {
+    return c.json({ success: false, error: 'Internal Database Error' }, 500);
+  }
+  else{
+    return c.json({ success: true, message: 'Time table updated' }, 200);
   }
 });
 
