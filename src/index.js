@@ -265,7 +265,7 @@ app.post("getAllMembersOfTeamThatAreScoutersAndCaptains", async c => {
 });
 
 app.post("updateMemberTimeTable", async c => {
-  const { Time, Date, Team, member } = await c.req.body();
+  const { Time, Date, Team, member } = await c.req.json();
 
   if (!Time || !Date || !Team || !member) {
     return c.json({ success: false, error: 'missing requirements' }, 400);
