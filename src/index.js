@@ -388,14 +388,15 @@ app.post("/deleteMember", async c => {
   }
 });
 
-app.post("/updateTimeTable", async c => {
+app.post("/updateTimeTable", async c => { //use postman to fix this
   const { name, teamCode, timetable } = await c.req.json();
-  if (!name || !team || !timetable) {
+  console.log(timetable, typeof timetable);
+  if (!name || !teamCode || !timetable) {
     return c.json({ success: false, error: 'missing requirements' }, 400);
   }
   const res = await c.env.DB.prepare(
     'UPDATE Users SET "Time Table" = ? WHERE Name = ? AND "Team Code" = ?'
-  ).bind(timetable, name, teamCode).run();
+  ).bind(JSON.stringify(timetable), name, teamCode).run();
   if (res.error) {
     return c.json({ success: false, error: 'Internal Database Error' }, 500);
   }
