@@ -285,90 +285,95 @@ app.post("updateMemberTimeTable", async c => {
 });
 
 app.post("/updateMemberName", async c => {
-  const { old: oldName, new: newName } = await c.req.json();
+  const { old: oldName, email, new: newName } = await c.req.json();
 
-  if (!oldName || !newName) {
-    return c.json({ success: false, error: 'missing requirements' }, 400);
+  if (!oldName || !email || !newName) {
+    return c.json({ success: false, error: "missing requirements" }, 400);
   }
 
-  const res = await c.env.DB.prepare(
-    'UPDATE Users SET Name = ? WHERE Name = ?'
-  ).bind(newName, oldName).run();
+  try {
+    const res = await c.env.DB.prepare(
+      'UPDATE Users SET Name = ? WHERE Name = ? AND Email = ?'
+    ).bind(newName, oldName, email).run();
 
-  if (res.error) {
-    return c.json({ success: false, error: 'Internal Database Error' }, 500);
-  } else{
-    return c.json({ success: true, message: 'Member name updated' }, 200);
+    return c.json({ success: true, message: "Member name updated" }, 200);
+  } catch (err) {
+    return c.json({ success: false, error: "Internal Database Error" }, 500);
   }
 });
+
 
 app.post("/updateMemberPass", async c => {
-  const { old: oldPass, new: newPass } = await c.req.json();
+  const { name, email, new: newPass } = await c.req.json();
 
-  if (!oldPass || !newPass) {
-    return c.json({ success: false, error: 'missing requirements' }, 400);
+  if (!name || !email || !newPass) {
+    return c.json({ success: false, error: "missing requirements" }, 400);
   }
 
-  const res = await c.env.DB.prepare(
-    'UPDATE Users SET Password = ? WHERE Password = ?'
-  ).bind(newPass, oldPass).run();
+  try {
+    const res = await c.env.DB.prepare(
+      'UPDATE Users SET Password = ? WHERE Name = ? AND Email = ?'
+    ).bind(newPass, name, email).run();
 
-  if (res.error) {
-    return c.json({ success: false, error: 'Internal Database Error' }, 500);
-  } else{
-    return c.json({ success: true, message: 'Member name updated' }, 200);
+    return c.json({ success: true, message: "Member password updated" }, 200);
+  } catch (err) {
+    return c.json({ success: false, error: "Internal Database Error" }, 500);
   }
 });
+
 
 app.post("/updateMemberEmail", async c => {
-  const { old: oldEmail, new: newEmail } = await c.req.json();
+  const { name, oldEmail, new: newEmail } = await c.req.json();
 
-  if (!oldEmail || !newEmail) {
-    return c.json({ success: false, error: 'missing requirements' }, 400);
+  if (!name || !oldEmail || !newEmail) {
+    return c.json({ success: false, error: "missing requirements" }, 400);
   }
 
-  const res = await c.env.DB.prepare(
-    'UPDATE Users SET Email = ? WHERE Email = ?'
-  ).bind(newEmail, oldEmail).run();
+  try {
+    const res = await c.env.DB.prepare(
+      'UPDATE Users SET Email = ? WHERE Name = ? AND Email = ?'
+    ).bind(newEmail, name, oldEmail).run();
 
-  if (res.error) {
-    return c.json({ success: false, error: 'Internal Database Error' }, 500);
-  } else{
-    return c.json({ success: true, message: 'Member name updated' }, 200);
+    return c.json({ success: true, message: "Member email updated" }, 200);
+  } catch (err) {
+    return c.json({ success: false, error: "Internal Database Error" }, 500);
   }
 });
 
-app.post("/updateMemberTeam", async c => {
-  const { old: oldTeamCode, new: newTeamCode } = await c.req.json();
 
-  if (!oldTeamCode || !newTeamCode) {
-    return c.json({ success: false, error: 'missing requirements' }, 400);
+app.post("/updateMemberTeam", async c => {
+  const { old: oldTeamCode, new: newTeamCode, name, email } = await c.req.json();
+
+  if (!oldTeamCode || !newTeamCode || !name || !email) {
+    return c.json({ success: false, error: "missing requirements" }, 400);
   }
 
-  const res = await c.env.DB.prepare(
-    'UPDATE Users SET "Team Code" = ? WHERE "Team Code" = ?'
-  ).bind(newTeamCode, oldTeamCode).run();
+  try {
+    const res = await c.env.DB.prepare(
+      'UPDATE Users SET "Team Code" = ? WHERE "Team Code" = ? AND Name = ? AND Email = ?'
+    ).bind(newTeamCode, oldTeamCode, name, email).run();
 
-  if (res.error) {
-    return c.json({ success: false, error: 'Internal Database Error' }, 500);
-  } else{
-    return c.json({ success: true, message: 'Member name updated' }, 200);
+    return c.json({ success: true, message: "Member team updated" }, 200);
+  } catch (err) {
+    return c.json({ success: false, error: "Internal Database Error" }, 500);
   }
 });
 
 app.post("/updateMemberRole", async c => {
-  const { old: oldRole, new: newRole } = await c.req.json();
-  if (!oldRole || !newRole) {
-    return c.json({ success: false, error: 'missing requirements' }, 400);
+  const { email, name, old: oldRole, new: newRole } = await c.req.json();
+
+  if (!name || !email || !oldRole || !newRole) {
+    return c.json({ success: false, error: "missing requirements" }, 400);
   }
-  const res = await c.env.DB.prepare(
-    'UPDATE Users SET Role = ? WHERE Role = ?'
-  ).bind(newRole, oldRole).run();
-  if (res.error) {
-    return c.json({ success: false, error: 'Internal Database Error' }, 500);
-  }
-  else{
-    return c.json({ success: true, message: 'Member role updated' }, 200);
+
+  try {
+    const res = await c.env.DB.prepare(
+      'UPDATE Users SET Role = ? WHERE Role = ? AND Name = ? AND Email = ?'
+    ).bind(newRole, oldRole, name, email).run();
+
+    return c.json({ success: true, message: "Member role updated" }, 200);
+  } catch (err) {
+    return c.json({ success: false, error: "Internal Database Error" }, 500);
   }
 });
 
@@ -388,9 +393,8 @@ app.post("/deleteMember", async c => {
   }
 });
 
-app.post("/updateTimeTable", async c => { //use postman to fix this
+app.post("/updateTimeTable", async c => {
   const { name, teamCode, timetable } = await c.req.json();
-  console.log(timetable, typeof timetable);
   if (!name || !teamCode || !timetable) {
     return c.json({ success: false, error: 'missing requirements' }, 400);
   }
