@@ -313,7 +313,7 @@ app.post("/updateMemberPass", async c => {
   try {
     const res = await c.env.DB.prepare(
       'UPDATE Users SET Password = ? WHERE Name = ? AND Email = ?'
-    ).bind(newPass, name, email).run();
+    ).bind(bcrypt.hashSync(newPass, 10), name, email).run();
 
     return c.json({ success: true, message: "Member password updated" }, 200);
   } catch (err) {
