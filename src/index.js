@@ -248,12 +248,12 @@ app.post("/getStatsOfTeam", async c => {
       return c.json({ success: false, error: 'Team has not data currently' }, 404);
     }
 
-    const {DataSetOne, DataSetTwo, DataSetThree, DataSetFour, DataSetFive, DataSetSix, DataSetSeven, DataSetEight, DataSetNine, DataSetTen} = TEAM;
-    return c.json({ success: true,  DataSetOne: DataSetOne, DataSetTwo: DataSetTwo, DataSetThree: DataSetThree, DataSetFour: DataSetFour, DataSetFive: DataSetFive, DataSetSix: DataSetSix, DataSetSeven: DataSetSeven, DataSetEight: DataSetEight, DataSetNine: DataSetNine, DataSetTen: DataSetTen });
+    const {DataSetOne, DataSetTwo, DataSetThree, DataSetFour, DataSetFive, DataSetSix, DataSetSeven, DataSetEight, DataSetNine, DataSetTen, FinalNotes} = TEAM;
+    return c.json({ success: true,  DataSetOne: DataSetOne, DataSetTwo: DataSetTwo, DataSetThree: DataSetThree, DataSetFour: DataSetFour, DataSetFive: DataSetFive, DataSetSix: DataSetSix, DataSetSeven: DataSetSeven, DataSetEight: DataSetEight, DataSetNine: DataSetNine, DataSetTen: DataSetTen, FinalNotes: FinalNotes });
   }
   else{
-    const {DataSetOne, DataSetTwo, DataSetThree, DataSetFour, DataSetFive, DataSetSix, DataSetSeven, DataSetEight, DataSetNine, DataSetTen} = team;
-    return c.json({ success: true,  DataSetOne: DataSetOne, DataSetTwo: DataSetTwo, DataSetThree: DataSetThree, DataSetFour: DataSetFour, DataSetFive: DataSetFive, DataSetSix: DataSetSix, DataSetSeven: DataSetSeven, DataSetEight: DataSetEight, DataSetNine: DataSetNine, DataSetTen: DataSetTen });
+    const {DataSetOne, DataSetTwo, DataSetThree, DataSetFour, DataSetFive, DataSetSix, DataSetSeven, DataSetEight, DataSetNine, DataSetTen, FinalNotes} = team;
+    return c.json({ success: true,  DataSetOne: DataSetOne, DataSetTwo: DataSetTwo, DataSetThree: DataSetThree, DataSetFour: DataSetFour, DataSetFive: DataSetFive, DataSetSix: DataSetSix, DataSetSeven: DataSetSeven, DataSetEight: DataSetEight, DataSetNine: DataSetNine, DataSetTen: DataSetTen, FinalNotes: FinalNotes });
   }
 });
 
