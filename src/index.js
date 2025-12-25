@@ -132,99 +132,115 @@ app.post('/getTeam', async (c) => {
 
 });
 
-app.post('/addReport', async c => {
-  const body = await c.req.json();
-  const { NumberOfDataSets, TeamNumber, FinalNotes } = body;
+app.post('/addReport', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { NumberOfDataSets, TeamNumber, FinalNotes } = body;
 
-  let sets = [];
-  let values = [];
+    const dataSetColumns = [
+      "DataSetOne","DataSetTwo","DataSetThree","DataSetFour","DataSetFive",
+      "DataSetSix","DataSetSeven","DataSetEight","DataSetNine","DataSetTen"
+    ];
+    const keys = ["One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten"];
 
-  const dataSetColumns = [
-    "DataSetOne","DataSetTwo","DataSetThree","DataSetFour","DataSetFive",
-    "DataSetSix","DataSetSeven","DataSetEight","DataSetNine","DataSetTen"
-  ];
-  const keys = ["One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten"];
+    let updateSets = [];
+    let updateValues = [];
 
-  for (let i = 0; i < NumberOfDataSets; i++) {
-    const key = keys[i];
-    const entry = body[key];
-    if (!entry) continue;
+    let insertCols = [];
+    let insertVals = [];
 
-    const [type, value] = entry;
-    const column = dataSetColumns[i];
+    for (let i = 0; i < NumberOfDataSets; i++) {
+      const key = keys[i];
+      const entry = body[key];
+      if (!entry) continue;
 
-    switch (type) {
-      case "text":
-        sets.push(`${column} = ?`);
-        values.push(value);
-        break;
-      case "number":
-        sets.push(`${column} = ${column} + ?`);
-        values.push(value);
-        break;
-      case "avg":
-        sets.push(`${column} = (${column} + ?)/2`);
-        values.push(value);
-        break;
+      const [type, value] = entry;
+      const column = dataSetColumns[i];
+
+      switch (type) {
+        case "text":
+          updateSets.push(`${column} = ?`);
+          updateValues.push(value);
+          insertCols.push(column);
+          insertVals.push(value);
+          break;
+        case "number":
+          updateSets.push(`${column} = ${column} + ?`);
+          updateValues.push(value);
+          insertCols.push(column);
+          insertVals.push(value);
+          break;
+        case "avg":
+          updateSets.push(`${column} = (${column} + ?)/2`);
+          updateValues.push(value);
+          insertCols.push(column);
+          insertVals.push(value);
+          break;
+      }
     }
-  }
 
-  let newNotes = Array.isArray(FinalNotes)
-    ? FinalNotes.filter(n => n != null && n !== "")
-    : (typeof FinalNotes === "string" && FinalNotes.trim() !== "" ? [FinalNotes.trim()] : ["No Notes"]);
+    let newNotes = Array.isArray(FinalNotes)
+      ? FinalNotes.filter(n => n != null && n !== "")
+      : (typeof FinalNotes === "string" && FinalNotes.trim() !== "" ? [FinalNotes.trim()] : ["No Notes"]);
 
-  const check = await c.env.DB.prepare(`SELECT * FROM Teams WHERE Number = ?`).bind(TeamNumber).first();
+    const team = await c.env.DB.prepare(`SELECT * FROM Teams WHERE Number = ?`).bind(TeamNumber).first();
 
-  if (check) {
-    let prevNotes = {};
-    if (check.FinalNotes) {
-      try { prevNotes = JSON.parse(check.FinalNotes); } catch { prevNotes = {}; }
-    }
-    const nextIndex = Object.keys(prevNotes).length;
-    newNotes.forEach((note, i) => { prevNotes[nextIndex + i + 1] = note; });
-    const finalNotesJson = JSON.stringify(prevNotes);
-
-    sets.push(`FinalNotes = ?`);
-    values.push(finalNotesJson, TeamNumber);
-
-    const sql = `UPDATE Teams SET ${sets.join(", ")} WHERE Number = ?`;
-    const res = await c.env.DB.prepare(sql).bind(...values).run();
-    if (res.error) return c.json({ success: false, error: 'Internal Database Error' }, 500);
-    return c.json({ success: true, message: 'added new dataset(s)' }, 200);
-  } else {
-    const check2 = await c.env.DB.prepare(`SELECT * FROM "UnNamed" WHERE "Team Number" = ?`).bind(TeamNumber).first();
-    if (check2) {
+    if (team) {
       let prevNotes = {};
-      if (check2.FinalNotes) {
-        try { prevNotes = JSON.parse(check2.FinalNotes); } catch { prevNotes = {}; }
+      if (team.FinalNotes) {
+        try { prevNotes = JSON.parse(team.FinalNotes); } catch {}
       }
       const nextIndex = Object.keys(prevNotes).length;
       newNotes.forEach((note, i) => { prevNotes[nextIndex + i + 1] = note; });
+
       const finalNotesJson = JSON.stringify(prevNotes);
+      updateSets.push(`FinalNotes = ?`);
+      updateValues.push(finalNotesJson, TeamNumber);
 
-      sets.push(`"FinalNotes" = ?`);
-      values.push(finalNotesJson, TeamNumber);
+      const sql = `UPDATE Teams SET ${updateSets.join(", ")} WHERE Number = ?`;
+      const res = await c.env.DB.prepare(sql).bind(...updateValues).run();
+      if (res.error) throw new Error(res.error);
 
-      const sql = `UPDATE "UnNamed" SET ${sets.join(", ")} WHERE "Team Number" = ?`;
-      const res = await c.env.DB.prepare(sql).bind(...values).run();
-      if (res.error) return c.json({ success: false, error: 'Internal Database Error' }, 500);
-      return c.json({ success: true, message: 'added new dataset(s)' }, 200);
-    } else {
-      const finalNotesJson = JSON.stringify(
-        newNotes.reduce((acc, note, i) => { acc[i+1] = note; return acc; }, {})
-      );
-
-      const insertColumns = ['"Team Number"', ...dataSetColumns.slice(0, sets.length - 1), '"FinalNotes"'];
-      const placeholders = Array(insertColumns.length).fill('?');
-
-      values.unshift(TeamNumber);
-      values.push(finalNotesJson);
-
-      const sql = `INSERT INTO "UnNamed" (${insertColumns.join(", ")}) VALUES (${placeholders.join(", ")})`;
-      const res = await c.env.DB.prepare(sql).bind(...values).run();
-      if (res.error) return c.json({ success: false, error: 'Internal Database Error' }, 500);
-      return c.json({ success: true, message: 'added new dataset(s)' }, 200);
+      return c.json({ success: true, message: 'Added new dataset(s)' }, 200);
     }
+
+    const unNamedTeam = await c.env.DB.prepare(`SELECT * FROM "UnNamed" WHERE "Team Number" = ?`).bind(TeamNumber).first();
+
+    if (unNamedTeam) {
+      let prevNotes = {};
+      if (unNamedTeam.FinalNotes) {
+        try { prevNotes = JSON.parse(unNamedTeam.FinalNotes); } catch {}
+      }
+      const nextIndex = Object.keys(prevNotes).length;
+      newNotes.forEach((note, i) => { prevNotes[nextIndex + i + 1] = note; });
+
+      const finalNotesJson = JSON.stringify(prevNotes);
+      updateSets.push(`"FinalNotes" = ?`);
+      updateValues.push(finalNotesJson, TeamNumber);
+
+      const sql = `UPDATE "UnNamed" SET ${updateSets.join(", ")} WHERE "Team Number" = ?`;
+      const res = await c.env.DB.prepare(sql).bind(...updateValues).run();
+      if (res.error) throw new Error(res.error);
+
+      return c.json({ success: true, message: 'Added new dataset(s)' }, 200);
+    }
+
+    const finalNotesJson = JSON.stringify(
+      newNotes.reduce((acc, note, i) => { acc[i + 1] = note; return acc; }, {})
+    );
+
+    const insertColumns = ['"Team Number"', ...insertCols, '"FinalNotes"'];
+    const placeholders = insertColumns.map(() => '?');
+    const valuesToBind = [TeamNumber, ...insertVals, finalNotesJson];
+
+    const sql = `INSERT INTO "UnNamed" (${insertColumns.join(", ")}) VALUES (${placeholders.join(", ")})`;
+    const res = await c.env.DB.prepare(sql).bind(...valuesToBind).run();
+    if (res.error) throw new Error(res.error);
+
+    return c.json({ success: true, message: 'Added new dataset(s)' }, 200);
+  } catch (err) {
+    console.error(err);
+    return c.json({ success: false, error: err.message || 'Internal Database Error' }, 500);
   }
 });
 
