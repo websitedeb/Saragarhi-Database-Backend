@@ -127,7 +127,7 @@ app.post('/getTeam', async (c) => {
     return c.json({ success: true, team: TEAM, unNamed: true });
   }
   else{
-    return c.json({ success: true, team });
+    return c.json({ success: true, team, unNamed: false });
   }
 
 });
