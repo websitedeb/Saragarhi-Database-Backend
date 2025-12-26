@@ -124,7 +124,7 @@ app.post('/getTeam', async (c) => {
     if (!TEAM) {
       return c.json({ success: false, error: 'Team not found' }, 404);
     }
-    return c.json({ success: true, team: TEAM });
+    return c.json({ success: true, team: TEAM, unNamed: true });
   }
   else{
     return c.json({ success: true, team });
