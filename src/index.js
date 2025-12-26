@@ -281,7 +281,7 @@ app.post("getAllMembersOfTeamThatAreScoutersAndCaptains", async c => {
   }
 
   const members = await c.env.DB.prepare(
-    'SELECT Name, Email, Role, "Time Table" FROM Users WHERE "Team Code" = ? AND Role = "Scouter" OR Role = "Captain"'
+    'SELECT Name, Email, Role, "Time Table" FROM Users WHERE "Team Code" = ? AND (Role = "Scouter" OR Role = "Captain")'
   ).bind(teamCode).all();
 
   if (!members || members.results.length === 0) {
