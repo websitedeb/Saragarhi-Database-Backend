@@ -1,15 +1,6 @@
 PRAGMA defer_foreign_keys=TRUE;
 CREATE TABLE [Teams] ("Team Code" integer PRIMARY KEY,"Number" integer,"Name" text,"DataSetOne" text,"DataSetTwo" text,"DataSetThree" text,"DataSetFour" text,"DataSetFive" text,"DataSetSix" text,"DataSetSeven" text,"DataSetEight" text,"DataSetNine" text,"DataSetTen" text, FinalNotes text);
-INSERT INTO "Teams" VALUES(2,2,'Smt','Jdjdjdj','Defense','Shoreline','1312','','','','','','','{"1":"Rbbrbrbt","2":"Jsjdj4b5vv5v5v","3":"12312312312"}');
-INSERT INTO "Teams" VALUES(1111,30,'U6','','','','','','','','','','',NULL);
-INSERT INTO "Teams" VALUES(1673,1741,'Red Alert Robotics','hello','Offense','Did Not Park','fdafdsfa f','0',NULL,NULL,NULL,NULL,NULL,'{"1":"i love 57","2":"234234","3":"32141324214"}');
+
 CREATE TABLE [UnNamed] ("Team Number" integer PRIMARY KEY,"DataSetOne" text,"DataSetTwo" text,"DataSetThree" text,"DataSetFour" text,"DataSetFive" text,"DataSetSix" text,"DataSetSeven" text,"DataSetEight" text,"DataSetNine" text,"DataSetTen" text, FinalNotes text);
-INSERT INTO "UnNamed" VALUES(1673,'3.0','Support','Did Not Park','123','5','6','7','8','9','0','{"1":"123123"}');
-INSERT INTO "UnNamed" VALUES(5522,NULL,'Offense','Shoreline','123123',NULL,NULL,NULL,NULL,NULL,NULL,'{"1":"123123123","2":"123123123"}');
-INSERT INTO "UnNamed" VALUES(123123,'hello',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'{"1":"i love 57","2":"i love 57"}');
+
 CREATE TABLE [Users] ("Email" text PRIMARY KEY,"Name" text,"Team Code" integer,"Password" text,"Role" text,"Time Table" real);
-INSERT INTO "Users" VALUES('ghoshsar000@students.centergrove.k12.in.us','Head of the Hei',2,'$2b$10$ZWM4.TmCOHHmPq98p1dOXuO86S1gUYSrtSYlkOV3/zUSLoLbKHxvi','Organizer','[{"id":"ro3tjhwv2w","Team":"109","Time":"17:13","Date":"2025-11-27"}]');
-INSERT INTO "Users" VALUES('sarthak22.ghoshal@gmail.com','Sarthak Ghoshal',2,'$2b$10$C8hjwGUEDGw9gTj2VReg7eZeqt7Y0mp0We4YLbf/lT/sOhPxlYVAq','Captain','[{"id":"o7z7dmrgpoj","Team":"1740","Time":"21:18","Date":"2025-11-14"},{"id":"n5kzxvygtl","Team":"12","Time":"10:56","Date":"2025-11-03"}]');
-INSERT INTO "Users" VALUES('parag.ghoshal@gmail.com','Parag Ghoshal',2,'$2b$10$YR5evQsmDFDVRwRzWU.nLOMs3czmQ69Rr5AbngKpvKkIuyFzSSEpC','Scouter','[{"id":"i9gtgaxs8z","Team":"1741","Time":"16:30","Date":"2025-12-27"}]');
-INSERT INTO "Users" VALUES('random_acc@code.com','Random',2,'$2b$10$tsl4KcEfyiUYACpuAQ6mcuZJid7QKTaA4WGAbHAq3q4V3rcto6yLK','Captain',NULL);
-INSERT INTO "Users" VALUES('s@gmail.com','Sa',1111,'$2b$10$yr45yEj5Enmio3KPadCOdebg3bFDVM..3/BIl8l31JF3ipHa2YWJK','Organizer',NULL);
