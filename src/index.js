@@ -6,6 +6,28 @@ const app = new Hono()
 
 app.use('*', cors())
 
+const validSigns = new Set();
+
+app.use(async (c, next) => {
+  if (c.req.path === "/get-sign") return next();
+
+  const url = new URL(c.req.url);
+  const sign = url.searchParams.get("sign");
+  
+  if (!sign || !validSigns.has(sign)) {
+    return c.json({ success: false, error: "Invalid sign" }, 403);
+  }
+
+  await next();
+});
+
+
+app.get("/get-sign", (c) => {
+  const sign = crypto.randomUUID();
+  validSigns.add(sign);               
+  return c.json({ success: true, sign });
+});
+
 app.put('/addUser', async (c) => {
   const body = await c.req.json()
   const { email, name, teamCode, Password, Role } = body
