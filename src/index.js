@@ -6,15 +6,13 @@ const app = new Hono()
 
 app.use('*', cors())
 
-const validSigns = new Set();
-
 app.use(async (c, next) => {
   if (c.req.path === "/get-sign") return next();
 
   const url = new URL(c.req.url);
   const sign = url.searchParams.get("sign");
   
-  if (!sign || !validSigns.has(sign)) {
+  if (!sign || !await c.env.KV.get(sign)) {
     return c.json({ success: false, error: "Invalid sign" }, 403);
   }
 
@@ -22,10 +20,21 @@ app.use(async (c, next) => {
 });
 
 
-app.get("/get-sign", (c) => {
+app.get("/get-sign", async (c) => {
   const sign = crypto.randomUUID();
-  validSigns.add(sign);               
+  await c.env.KV.put(sign, "valid");             
   return c.json({ success: true, sign });
+});
+
+app.get("/delete-sign", async (c) => {
+  const url = new URL(c.req.url);
+  const sign = url.searchParams.get("sign");
+  if (sign) {
+    await c.env.KV.delete(sign);
+    return c.json({ success: true, message: "Sign deleted" });
+  } else {
+    return c.json({ success: false, error: "Sign is required" }, 400);
+  }
 });
 
 app.put('/addUser', async (c) => {

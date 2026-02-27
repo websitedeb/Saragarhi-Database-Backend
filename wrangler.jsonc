@@ -2,7 +2,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "saragarhi-api-database-test",
 	"main": "src/index.js",
-	"compatibility_date": "2026-01-20",
+	"compatibility_date": "2026-02-26",
 	"observability": {
 		"enabled": true
 	},
@@ -12,4 +12,10 @@
 		"database_id": "ce551c17-08e9-48c4-8def-24df7fb370b6",
 		"remote": true
 	}],
+	"kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "4fb7b75125d848a8b722bdc751403fd2"
+    }
+  ]
 }
