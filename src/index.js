@@ -22,7 +22,9 @@ app.use(async (c, next) => {
 
 app.get("/get-sign", async (c) => {
   const sign = crypto.randomUUID();
-  await c.env.KV.put(sign, "valid");             
+  await c.env.KV.put(sign, "valid", {
+    expirationTtl: 172800   
+  });            
   return c.json({ success: true, sign });
 });
 
