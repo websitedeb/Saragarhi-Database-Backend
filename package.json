@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "hono": "^4.6.20"
+    "hono": "^4.6.20",
+    "string-math": "^1.2.2"
   },
   "devDependencies": {
     "@types/node": "22.13.0",

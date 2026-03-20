@@ -187,6 +187,11 @@ const normalizeValue = (val) => {
   return val;
 };
 
+const formatMultiValue = (val) => {
+  if (Array.isArray(val)) return val;
+  return [val];
+};
+
 app.post('/addReport', async (c) => {
   try {
     const body = await c.req.json();
@@ -209,8 +214,8 @@ app.post('/addReport', async (c) => {
       if (!Array.isArray(entry)) return;
 
       const [type, rawValue] = entry;
-      const value = normalizeValue(rawValue);
       const column = `DataSet${numberToWord(i + 1)}`;
+      const value = normalizeValue(rawValue);
 
       switch (type) {
         case "text":
@@ -234,11 +239,25 @@ app.post('/addReport', async (c) => {
           insertVals.push(value);
           break;
 
+        case "multi":
+          updateSets.push(`${column} = ?`);
+          updateValues.push(null);
+
+          insertCols.push(column);
+          insertVals.push(JSON.stringify(
+            formatMultiValue(rawValue).reduce((acc, v, i) => {
+              acc[i + 1] = normalizeValue(v);
+              return acc;
+            }, {})
+          ));
+          break;
+
         default:
           console.warn(`Unknown type "${type}" for ${column}`);
       }
     });
 
+    // ---- FINAL NOTES HANDLING ----
     let newNotes = [];
 
     if (Array.isArray(FinalNotes)) {
@@ -259,6 +278,38 @@ app.post('/addReport', async (c) => {
       ).bind(TeamNumber).first();
 
       if (row) {
+        // ---- HANDLE MULTI MERGING ----
+        datasetKeys.forEach((key, i) => {
+          const entry = body[key];
+          if (!Array.isArray(entry)) return;
+
+          const [type, rawValue] = entry;
+          const column = `DataSet${numberToWord(i + 1)}`;
+
+          if (type === "multi") {
+            let prev = {};
+
+            if (row[column]) {
+              try { prev = JSON.parse(row[column]); } catch {}
+            }
+
+            const newValues = formatMultiValue(rawValue);
+            const startIndex = Object.keys(prev).length;
+
+            newValues.forEach((v, idx) => {
+              prev[startIndex + idx + 1] = normalizeValue(v);
+            });
+
+            const mergedJson = JSON.stringify(prev);
+
+            const idx = updateValues.findIndex(v => v === null);
+            if (idx !== -1) {
+              updateValues[idx] = mergedJson;
+            }
+          }
+        });
+
+        // ---- FINAL NOTES MERGE ----
         let prevNotes = {};
         if (row.FinalNotes) {
           try { prevNotes = JSON.parse(row.FinalNotes); } catch {}
@@ -285,7 +336,7 @@ app.post('/addReport', async (c) => {
       }
     }
 
-    // INSERT new row
+    // ---- INSERT NEW ROW ----
     const finalNotesJson = JSON.stringify(
       newNotes.reduce((acc, note, i) => {
         acc[i + 1] = note;
