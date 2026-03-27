@@ -131,9 +131,18 @@ app.post("/addTeam", async (c) => {
       'SELECT * FROM UnNamed WHERE "Team Number" = ?'
     ).bind(teamNum).first();
     if (check) {
-      await c.env.DB.prepare(
-        'DELETE FROM UnNamed WHERE "Team Number" = ?'
-      ).bind(teamNum).run();
+      const input = await c.env.DB.prepare(
+        `UPDATE Teams SET DataSetOne = ?, DataSetTwo = ?, DataSetThree = ?, DataSetFour = ?, DataSetFive = ?, DataSetSix = ?, DataSetSeven = ?, DataSetEight = ?, DataSetNine = ?, DataSetTen = ?, FinalNotes = ? WHERE Number = ?`
+      ).bind(check["DataSetOne"], check["DataSetTwo"], check["DataSetThree"], check["DataSetFour"], check["DataSetFive"], check["DataSetSix"], check["DataSetSeven"], check["DataSetEight"], check["DataSetNine"], check["DataSetTen"], check["FinalNotes"],check["Team Number"]).run()
+      
+      if (!input.error){
+        await c.env.DB.prepare(
+          'DELETE FROM UnNamed WHERE "Team Number" = ?'
+        ).bind(teamNum).run();
+      }
+      else{
+        throw new Error(input.error);
+      }
     }
     return c.json({ success: true, result });
   }
